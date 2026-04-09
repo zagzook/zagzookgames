@@ -1,0 +1,59 @@
+# ===================
+# IDE & Editor Files
+# ===================
+.phpintel/
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# ===================
+# Operating System
+# ===================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===================
+# Config
+# ===================
+config/
+
+# ===================
+# Logs
+# ===================
+modules/*/logs/*
+!modules/*/logs/.gitkeep
+
+# ===================
+# Dependencies
+# ===================
+vendor/
+node_modules/
+
+# ===================
+# Environment
+# ===================
+.env
+.env.local
+.env.production
+
+# ===================
+# Temporary Files
+# ===================
+*.log
+*.cache
+*.tmp
+
+# ===================
+# Personal Notes
+# ===================
+_junk/
+
+# ===================
+# Uploaded Files
+# ===================
+uploads/
