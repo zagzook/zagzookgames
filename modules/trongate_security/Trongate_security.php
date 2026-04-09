@@ -1,11 +1,13 @@
 <?php
+
 /**
  * Security access control class for managing scenario-based authorization.
  * Routes authorization requests to appropriate modules with token validation.
  * Provides centralized access control with configurable security scenarios.
  */
-class Trongate_security extends Trongate {
-    
+class Trongate_security extends Trongate
+{
+
     /**
      * Class constructor.
      *
@@ -14,11 +16,12 @@ class Trongate_security extends Trongate {
      *
      * @param string|null $module_name The module name (auto-provided by framework)
      */
-    public function __construct(?string $module_name = null) {
+    public function __construct(?string $module_name = null)
+    {
         parent::__construct($module_name);
         block_url($this->module_name);
     }
-    
+
     /**
      * Ensures the user is allowed access for the specified scenario.
      *
@@ -28,9 +31,13 @@ class Trongate_security extends Trongate {
      *               May include tokens, user objects, arrays, booleans, or other data types.
      * @note Some scenarios may terminate script execution (via die/exit) instead of returning.
      */
-    public function make_sure_allowed(string $scenario = 'admin panel', array $params = []): mixed {
+    public function make_sure_allowed(string $scenario = 'admin panel', array $params = []): mixed
+    {
 
         switch ($scenario) {
+            case 'members area':
+                $result = $this->members->make_sure_allowed($scenario, $params);
+                break;
             // case 'members area':
             //     $result = $this->members->make_sure_allowed($scenario, $params);
             //     break;
@@ -39,8 +46,7 @@ class Trongate_security extends Trongate {
                 $result = $this->trongate_administrators->make_sure_allowed();
                 break;
         }
-        
+
         return $result;
     }
-
 }

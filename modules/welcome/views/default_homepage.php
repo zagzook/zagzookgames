@@ -7,4 +7,7 @@
     echo anchor('https://trongate.io', 'Visit Trongate.io', ['class' => 'button', 'target' => '_blank']);
     echo anchor('https://trongate.io/docs', 'View Documentation', ['class' => 'button alt', 'target' => '_blank']);
     ?>
+    <div class="text-center">
+        <?= anchor('dashboard', 'Members\' Area', ['class' => 'button']) ?>
+    </div>
 </div>
