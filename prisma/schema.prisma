@@ -1,13 +1,361 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// =============================================================
+// ZAGZOOK GAMES — Prisma Schema
+// Prisma v7 format: datasource URL lives in prisma.config.ts
+// Run `npx prisma migrate dev --name <description>` to apply changes
+// =============================================================
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
+// -------------------------------------------------------------
+// GENERATOR
+// Outputs the Prisma client to src/generated/prisma
+// -------------------------------------------------------------
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
 
+// -------------------------------------------------------------
+// DATASOURCE
+// Provider declared here; URL is injected via prisma.config.ts
+// -------------------------------------------------------------
 datasource db {
   provider = "postgresql"
+}
+
+// =============================================================
+// ENUMS
+// =============================================================
+
+// Subscription tier — drives content access throughout the app
+enum SubscriptionTier {
+  FREE
+  PRO
+}
+
+// Stripe subscription lifecycle states
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+// Whether a daily game is available to Free or Pro members only
+enum GameTier {
+  FREE
+  PRO
+}
+
+// Every coin earn or spend records one of these types
+// This makes the ledger auditable and queryable by reason
+enum CoinTransactionType {
+  EARN_GAME_COMPLETE         // +coins: completed a daily game
+  EARN_BOOKLET_GAME_COMPLETE // +coins: completed a booklet game
+  SPEND_HINT                 // -coins: used a hint in a game
+  ADMIN_ADJUSTMENT           // +/- coins: manual admin correction
+  REFUND                     // +coins: coins returned after dispute
+}
+
+// =============================================================
+// AUTH.JS REQUIRED MODELS
+// These four models are required by @auth/prisma-adapter
+// Do not rename or remove fields — Auth.js depends on them
+// =============================================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?   // profile avatar URL
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Auth.js relations
+  accounts      Account[]
+  sessions      Session[]
+
+  // App relations
+  subscription     Subscription?
+  gameProgress     UserGameProgress[]
+  bookletProgress  BookletProgress[]
+  coinLedger       CoinLedger[]
+}
+
+// OAuth provider accounts linked to a user (Google, GitHub, etc.)
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?  @db.Text
+  access_token      String?  @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?  @db.Text
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// Active user sessions
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Email verification tokens for magic-link / email sign-in
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// =============================================================
+// SUBSCRIPTION
+// One row per user. Tracks Stripe state and tier.
+// Created automatically when a user registers (defaults FREE).
+// Updated by Stripe webhooks.
+// =============================================================
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeCustomerId     String?            @unique  // Stripe customer ID
+  stripeSubscriptionId String?            @unique  // Stripe subscription ID
+  stripePriceId        String?                     // which price they're on
+  tier                 SubscriptionTier   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime?          // when current billing period started
+  currentPeriodEnd     DateTime?          // when current billing period ends
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// =============================================================
+// GAME REGISTRY
+// One row per game type (e.g. Sudoku 9x9, Word Weave).
+// Adding a new game = adding a row here + a new frontend component.
+// No core architecture changes needed.
+// =============================================================
+
+model GameType {
+  id          String   @id @default(cuid())
+  slug        String   @unique  // URL-safe identifier e.g. "zagzook-classic"
+  displayName String            // Shown to users e.g. "Zagzook Classic"
+  description String?
+  component   String            // Frontend component name e.g. "ZagzookClassicBoard"
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0) // Controls display order on site
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  manifest GameManifest?
+  games    Game[]
+  booklets Booklet[]
+}
+
+// =============================================================
+// GAME MANIFEST
+// One row per game type. Stores all game-type-specific config:
+// hint types, hint costs, levels, rules, etc.
+// Changing hint costs here applies to future games only.
+// Example config JSON:
+// {
+//   "levels": ["easy", "medium", "hard"],
+//   "hints": [
+//     { "type": "reveal_cell", "label": "Reveal Cell", "coinCost": 10 },
+//     { "type": "reveal_row",  "label": "Reveal Row",  "coinCost": 25 }
+//   ],
+//   "coinsOnComplete": 50
+// }
+// =============================================================
+
+model GameManifest {
+  id         String   @id @default(cuid())
+  gameTypeId String   @unique
+  version    String   @default("v1") // increment when you change structure
+  config     Json     // full manifest as described above
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  gameType GameType @relation(fields: [gameTypeId], references: [id], onDelete: Cascade)
+}
+
+// =============================================================
+// GAME (Daily Games)
+// One row per individual puzzle.
+// scheduledDate determines which day a game appears.
+// gameData is NEVER sent to the client until server confirms access.
+// =============================================================
+
+model Game {
+  id            String   @id @default(cuid())
+  gameTypeId    String
+  scheduledDate DateTime // Date only — time component is ignored
+  tier          GameTier @default(FREE) // FREE = visible to all, PRO = gated
+  level         String?  // "easy" | "medium" | "hard" — must match manifest levels
+  title         String?  // optional display title override
+  gameData      Json     // the full puzzle — NEVER exposed without auth check
+  isPublished   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  gameType GameType           @relation(fields: [gameTypeId], references: [id])
+  progress UserGameProgress[]
+
+  // Each game type can only have one game per date/tier/level combo
+  @@unique([gameTypeId, scheduledDate, tier, level])
+  // Fast lookup by date (daily lobby query)
+  @@index([scheduledDate])
+  // Fast lookup by game type + date range (Pro archive query)
+  @@index([gameTypeId, scheduledDate])
+}
+
+// =============================================================
+// BOOKLETS
+// Pro-only. One booklet = 10 chapters x 10 games = 100 games.
+// Loaded chapter by chapter — never all 100 games at once.
+// Added monthly (8 per month across all game types).
+// =============================================================
+
+model Booklet {
+  id          String    @id @default(cuid())
+  gameTypeId  String
+  title       String    // e.g. "Zagzook Classic Vol. 1"
+  description String?
+  coverImage  String?   // URL to cover image
+  isPublished Boolean   @default(false) // false until ready to release
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  gameType  GameType         @relation(fields: [gameTypeId], references: [id])
+  chapters  BookletChapter[]
+  progress  BookletProgress[]
+}
+
+// One of 10 chapters in a booklet
+model BookletChapter {
+  id        String   @id @default(cuid())
+  bookletId String
+  number    Int      // 1 through 10
+  title     String?  // e.g. "Chapter 1: The Basics"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booklet  Booklet           @relation(fields: [bookletId], references: [id], onDelete: Cascade)
+  games    BookletGame[]
+  progress BookletProgress[]
+
+  // Each chapter number must be unique within a booklet
+  @@unique([bookletId, number])
+}
+
+// One of 10 games within a chapter
+model BookletGame {
+  id        String   @id @default(cuid())
+  chapterId String
+  number    Int      // 1 through 10 within the chapter
+  title     String?
+  level     String?
+  gameData  Json     // puzzle content — never served without Pro auth check
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chapter  BookletChapter     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  progress UserGameProgress[]
+
+  // Each game number must be unique within a chapter
+  @@unique([chapterId, number])
+}
+
+// =============================================================
+// PROGRESS TRACKING
+// Tracks completion at the individual game level.
+// A record is created when a user starts a game, updated on complete.
+// Covers both daily games and booklet games (one or the other, not both).
+// =============================================================
+
+model UserGameProgress {
+  id            String    @id @default(cuid())
+  userId        String
+  // One of these two will be set — never both
+  gameId        String?   // set for daily games
+  bookletGameId String?   // set for booklet games
+  isCompleted   Boolean   @default(false)
+  completedAt   DateTime?
+  hintsUsed     Int       @default(0)   // number of hints used in this game
+  timeSpentSecs Int       @default(0)   // seconds spent playing
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game?        @relation(fields: [gameId], references: [id])
+  bookletGame BookletGame? @relation(fields: [bookletGameId], references: [id])
+
+  // A user can only have one progress record per game
+  @@unique([userId, gameId])
+  @@unique([userId, bookletGameId])
+}
+
+// Tracks completion at booklet and chapter level (for progress bars / UI)
+model BookletProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  bookletId   String
+  chapterId   String?   // null = booklet-level tracking, set = chapter-level
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booklet Booklet         @relation(fields: [bookletId], references: [id])
+  chapter BookletChapter? @relation(fields: [chapterId], references: [id])
+
+  @@unique([userId, bookletId, chapterId])
+}
+
+// =============================================================
+// COIN LEDGER
+// Every coin earn and spend is a row — never just a balance number.
+// Current balance = SUM(amount) WHERE userId = x
+// This makes fraud detection and dispute resolution possible.
+// amount is positive for earnings, negative for spends.
+// =============================================================
+
+model CoinLedger {
+  id            String              @id @default(cuid())
+  userId        String
+  type          CoinTransactionType
+  amount        Int                 // positive = earned, negative = spent
+  balanceAfter  Int                 // running total after this transaction
+  description   String?            // e.g. "Completed Zagzook Classic - Easy"
+  gameId        String?            // which daily game triggered this (if any)
+  bookletGameId String?            // which booklet game triggered this (if any)
+  createdAt     DateTime           @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Fast balance lookups and audit queries
+  @@index([userId])
+  @@index([userId, createdAt])
 }
