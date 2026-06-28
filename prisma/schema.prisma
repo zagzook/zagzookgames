@@ -9,8 +9,7 @@
 // Outputs the Prisma client to src/generated/prisma
 // -------------------------------------------------------------
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 // -------------------------------------------------------------
@@ -19,6 +18,7 @@ generator client {
 // -------------------------------------------------------------
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // =============================================================
@@ -67,7 +67,9 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
-  image         String?   // profile avatar URL
+  image         String?           // profile avatar URL
+  // Nullable — only set for email/password accounts, null for OAuth users
+  password      String?  @db.Text // bcrypt hash, never stored as plaintext
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
