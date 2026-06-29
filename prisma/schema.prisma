@@ -70,6 +70,7 @@ model User {
   image         String?           // profile avatar URL
   // Nullable — only set for email/password accounts, null for OAuth users
   password      String?  @db.Text // bcrypt hash, never stored as plaintext
+  isAdmin       Boolean  @default(false) // only set manually for site owner
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
