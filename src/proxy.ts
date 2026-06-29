@@ -1,14 +1,13 @@
 // =============================================================
-// NEXT.JS MIDDLEWARE — Route Protection
+// NEXT.JS PROXY (formerly middleware.ts — renamed in Next.js 16)
 // Runs on every matched request BEFORE the page renders.
 // Responsibilities:
 //   1. Redirect unauthenticated users away from protected routes
 //   2. Redirect authenticated users away from auth pages (login)
 //
-// NOTE: Middleware only checks "is user logged in?"
+// NOTE: Proxy only checks "is user logged in?"
 //       Tier checks (FREE vs PRO) happen inside API routes and
-//       server components — never here. Middleware is not the
-//       right place for subscription-level access control.
+//       server components — never here.
 // =============================================================
 
 import { auth } from "@/auth"
@@ -27,14 +26,12 @@ const PROTECTED_ROUTES = [
 // (redirects them to dashboard instead)
 const AUTH_ROUTES = ["/login", "/register"]
 
-// Admin routes — require login AND we do a tier/role check
-// in the actual page component, not here
+// Admin routes — require login; tier/role check happens in the page itself
 const ADMIN_ROUTES = ["/admin"]
 
-// Auth.js v5 middleware: req is augmented with req.auth (Session | null)
+// Auth.js v5: req is augmented with req.auth (Session | null)
 export default auth((req) => {
   const { nextUrl } = req
-  // req.auth is null when not logged in, Session object when logged in
   const isLoggedIn = !!req.auth
 
   const isProtected = PROTECTED_ROUTES.some((route) =>
@@ -55,7 +52,6 @@ export default auth((req) => {
   // Protected routes: redirect to login if not authenticated
   if (isProtected && !isLoggedIn) {
     const loginUrl = new URL("/login", nextUrl)
-    // Preserve the intended destination so we can redirect after login
     loginUrl.searchParams.set("callbackUrl", nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
   }
@@ -65,13 +61,10 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/dashboard", nextUrl))
   }
 
-  // All other routes: allow through
   return NextResponse.next()
 })
 
-// Tell Next.js which routes this middleware should run on.
-// Excludes static files, images, and API routes to avoid
-// unnecessary middleware overhead.
+// Tell Next.js which routes this proxy should run on
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
