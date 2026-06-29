@@ -8,7 +8,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAdmin } from "@/lib/admin"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
-import { Prisma } from "@prisma/client"
 import { startOfDay, endOfDay } from "@/lib/date-utils"
 
 // -------------------------------------------------------
@@ -104,7 +103,7 @@ export async function POST(req: NextRequest) {
       tier,
       level: level ?? null,
       title: title ?? null,
-      gameData: gameData as unknown as Prisma.InputJsonValue,
+      gameData: gameData as never,
       isPublished,
     },
     select: { id: true, scheduledDate: true, tier: true, level: true },

@@ -9,7 +9,7 @@
 // not duplicated.
 // =============================================================
 
-import { PrismaClient, Prisma } from "@prisma/client"
+import { PrismaClient } from "@prisma/client"
 import { GAME_REGISTRY } from "../src/lib/game-registry/registry"
 
 const prisma = new PrismaClient()
@@ -43,12 +43,12 @@ async function main() {
     await prisma.gameManifest.upsert({
       where: { gameTypeId: gameType.id },
       update: {
-        config: game.defaultManifest as unknown as Prisma.InputJsonValue,
+        config: game.defaultManifest as never,
         version: "v1",
       },
       create: {
         gameTypeId: gameType.id,
-        config: game.defaultManifest as unknown as Prisma.InputJsonValue,
+        config: game.defaultManifest as never,
         version: "v1",
       },
     })

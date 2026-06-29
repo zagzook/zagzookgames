@@ -52,7 +52,7 @@
 //   }
 // =============================================================
 
-import { PrismaClient, Prisma } from "@prisma/client"
+import { PrismaClient } from "@prisma/client"
 import * as fs from "fs"
 import * as path from "path"
 
@@ -154,7 +154,6 @@ async function importDailyGames(importDir: string) {
   console.log(`\nFound ${manifestFiles.length} daily manifest(s) to process.\n`)
 
   let imported = 0
-  let skipped = 0
   let errors = 0
 
   for (const manifestFile of manifestFiles) {
@@ -208,7 +207,7 @@ async function importDailyGames(importDir: string) {
           update: {
             // Update title and gameData if re-importing a corrected file
             title: gameFile.title ?? null,
-            gameData: gameFile.gameData as unknown as Prisma.InputJsonValue,
+            gameData: gameFile.gameData as never,
           },
           create: {
             gameTypeId,
@@ -216,7 +215,7 @@ async function importDailyGames(importDir: string) {
             tier: entry.tier,
             level: gameFile.level ?? null,
             title: gameFile.title ?? null,
-            gameData: gameFile.gameData as unknown as Prisma.InputJsonValue,
+            gameData: gameFile.gameData as never,
             isPublished: true,
           },
         })
@@ -233,8 +232,8 @@ async function importDailyGames(importDir: string) {
   console.log(`\n${"─".repeat(50)}`)
   console.log(`Daily import complete.`)
   console.log(`  Imported/updated : ${imported}`)
-  console.log(`  Skipped (exists) : ${skipped}`)
   console.log(`  Errors           : ${errors}`)
+  console.log(`  (Duplicates are silently updated via upsert)`)
 }
 
 // =============================================================
@@ -346,7 +345,7 @@ async function importBooklets(importDir: string) {
               },
             },
             update: {
-              gameData: gameFile.gameData as unknown as Prisma.InputJsonValue,
+              gameData: gameFile.gameData as never,
               title: gameFile.title ?? null,
               level: gameFile.level ?? null,
             },
@@ -355,7 +354,7 @@ async function importBooklets(importDir: string) {
               number: gameEntry.number,
               title: gameFile.title ?? null,
               level: gameFile.level ?? null,
-              gameData: gameFile.gameData as unknown as Prisma.InputJsonValue,
+              gameData: gameFile.gameData as never,
             },
           })
 
