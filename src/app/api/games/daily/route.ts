@@ -23,16 +23,19 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const dateParam = searchParams.get("date") // expected format: YYYY-MM-DD
 
-  // Parse and validate the date
-  let targetDate: Date
-  if (dateParam) {
-    targetDate = new Date(dateParam)
-    if (isNaN(targetDate.getTime())) {
-      return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD." }, { status: 400 })
-    }
-  } else {
-    targetDate = new Date()
+  // Compare dates as YYYY-MM-DD strings to avoid timezone issues.
+  // new Date("2026-06-29") creates UTC midnight which shifts to the
+  // previous day in local time — string comparison avoids this entirely.
+  const todayStr = new Date().toISOString().split("T")[0]
+  const targetDateStr = dateParam ?? todayStr
+
+  // Validate the date string format
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(targetDateStr)) {
+    return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD." }, { status: 400 })
   }
+
+  // Parse target date for DB queries (UTC midnight is correct for DB range queries)
+  const targetDate = new Date(`${targetDateStr}T00:00:00.000Z`)
 
   // Get the current user's session (null if not logged in)
   const session = await auth()
@@ -41,18 +44,15 @@ export async function GET(req: NextRequest) {
 
   // -------------------------------------------------------
   // PRO ARCHIVE ACCESS CHECK
-  // Free users can only access today's games.
-  // Pro users can access games up to 1 year in the past.
+  // Compare YYYY-MM-DD strings directly — no timezone drift
   // -------------------------------------------------------
-  const today = new Date()
-  const oneYearAgo = new Date(today)
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+  const oneYearAgoStr = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0]
 
-  const isToday =
-    targetDate.toDateString() === today.toDateString()
-
-  const isPastDate = targetDate < today && !isToday
-  const isFutureDate = targetDate > today
+  const isToday = targetDateStr === todayStr
+  const isPastDate = targetDateStr < todayStr
+  const isFutureDate = targetDateStr > todayStr
 
   // Future dates are not accessible to anyone
   if (isFutureDate) {
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Pro users can only go back 1 year
-  if (isPastDate && userTier === "PRO" && targetDate < oneYearAgo) {
+  if (isPastDate && userTier === "PRO" && targetDateStr < oneYearAgoStr) {
     return NextResponse.json({ error: "Archive access is limited to the past 12 months." }, { status: 403 })
   }
 
