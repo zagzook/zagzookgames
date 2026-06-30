@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const numberTrail: GameTypeDefinition = {
   slug: "number-trail",
-  displayName: "Number Trail",
+  displayName: "ZagPath",
   description: "Connect the numbers in order by drawing a continuous trail through the grid.",
   component: "NumberTrailBoard",
   sortOrder: 6,

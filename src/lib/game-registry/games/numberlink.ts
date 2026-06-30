@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const numberlink: GameTypeDefinition = {
   slug: "numberlink",
-  displayName: "Numberlink",
+  displayName: "ZagLink",
   description: "Connect matching number pairs with paths that fill the entire grid.",
   component: "NumberlinkBoard",
   sortOrder: 7,

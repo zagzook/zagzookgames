@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const bridges: GameTypeDefinition = {
   slug: "bridges",
-  displayName: "Bridges",
+  displayName: "Island Zag",
   description: "Connect all islands with bridges — each island's bridge count must match its number.",
   component: "BridgesBoard",
   sortOrder: 5,

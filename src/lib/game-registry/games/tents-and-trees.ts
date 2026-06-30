@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const tentsAndTrees: GameTypeDefinition = {
   slug: "tents-and-trees",
-  displayName: "Tents & Trees",
+  displayName: "ZagCamp",
   description: "Place tents next to trees — match row/column counts and keep tents from touching.",
   component: "TentsTreesBoard",
   sortOrder: 12,

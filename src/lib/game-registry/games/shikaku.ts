@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const shikaku: GameTypeDefinition = {
   slug: "shikaku",
-  displayName: "Shikaku",
+  displayName: "ZagBlock",
   description: "Divide the grid into rectangles so each contains exactly one number equal to its area.",
   component: "ShikakuBoard",
   sortOrder: 10,

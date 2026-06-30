@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const sudoku16x16Hex: GameTypeDefinition = {
   slug: "sudoku-16x16-hex",
-  displayName: "Large Sudoku 16×16",
+  displayName: "Zagdoku Sixteen",
   description: "Fill every row, column, and 4×4 box with hex digits 0–9 and A–F.",
   component: "SudokuBoard",
   sortOrder: 15,

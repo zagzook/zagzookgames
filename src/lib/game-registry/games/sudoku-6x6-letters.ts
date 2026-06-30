@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const sudoku6x6Letters: GameTypeDefinition = {
   slug: "sudoku-6x6-letters",
-  displayName: "Letter Sudoku 6×6",
+  displayName: "Zagdoku Alpha Six",
   description: "Fill every row, column, and 2×3 box with 6 unique letters.",
   component: "SudokuBoard",
   sortOrder: 18,

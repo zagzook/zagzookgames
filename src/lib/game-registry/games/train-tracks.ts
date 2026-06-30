@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const trainTracks: GameTypeDefinition = {
   slug: "train-tracks",
-  displayName: "Train Tracks",
+  displayName: "ZagRail",
   description: "Lay track pieces to complete a rail route from entry to exit — row and column counts must match.",
   component: "TrainTracksBoard",
   sortOrder: 29,

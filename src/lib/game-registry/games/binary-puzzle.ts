@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const binaryPuzzle: GameTypeDefinition = {
   slug: "binary-puzzle",
-  displayName: "Binary Puzzle",
+  displayName: "ZagFlip",
   description: "Fill the grid with 0s and 1s — no three in a row, equal counts per row and column.",
   component: "BinaryBoard",
   sortOrder: 4,

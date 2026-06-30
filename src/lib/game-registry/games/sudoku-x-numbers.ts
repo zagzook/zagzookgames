@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const sudokuXNumbers: GameTypeDefinition = {
   slug: "sudoku-x-numbers",
-  displayName: "Sudoku-X (Numbers)",
+  displayName: "Zagdoku X",
   description: "Classic 9×9 Sudoku with an extra rule — both main diagonals must also contain 1–9.",
   component: "SudokuBoard",
   sortOrder: 21,

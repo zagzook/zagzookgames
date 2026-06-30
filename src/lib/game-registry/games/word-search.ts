@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const wordSearch: GameTypeDefinition = {
   slug: "word-search",
-  displayName: "Word Search",
+  displayName: "ZagSeek",
   description: "Find all the hidden words in the letter grid — across, down, and diagonal.",
   component: "WordSearchBoard",
   sortOrder: 9,

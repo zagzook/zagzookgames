@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const slitherlink: GameTypeDefinition = {
   slug: "slitherlink",
-  displayName: "Slitherlink",
+  displayName: "ZagLoop",
   description: "Draw a single closed loop around the grid dots — each number shows how many sides are used.",
   component: "SlitherlinkBoard",
   sortOrder: 28,

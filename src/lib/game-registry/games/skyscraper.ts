@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const skyscraper: GameTypeDefinition = {
   slug: "skyscraper",
-  displayName: "Skyscraper",
+  displayName: "Tower Zag",
   description: "Place buildings of different heights so the clues outside match how many you can see.",
   component: "SkyscraperBoard",
   sortOrder: 11,

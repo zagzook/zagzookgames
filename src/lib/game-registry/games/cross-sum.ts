@@ -9,7 +9,7 @@ import type { GameTypeDefinition } from "../types"
 
 export const crossSum: GameTypeDefinition = {
   slug: "cross-sum",
-  displayName: "Cross Sum",
+  displayName: "ZagSum",
   description: "Fill the grid with digits 1–9 so every row and column run adds up to its clue. No repeats allowed in a run.",
   component: "CrossSumBoard",
   sortOrder: 31,

@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const numberSnake: GameTypeDefinition = {
   slug: "number-snake",
-  displayName: "Number Snake",
+  displayName: "ZagSnake",
   description: "Draw a snake through the grid that passes through numbers in the correct sequence.",
   component: "NumberSnakeBoard",
   sortOrder: 26,

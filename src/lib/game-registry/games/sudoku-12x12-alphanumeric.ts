@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const sudoku12x12Alphanumeric: GameTypeDefinition = {
   slug: "sudoku-12x12-alphanumeric",
-  displayName: "Large Sudoku 12×12",
+  displayName: "Zagdoku Twelve",
   description: "Fill every row, column, and 3×4 box with digits 1–9 and letters A–C.",
   component: "SudokuBoard",
   sortOrder: 14,

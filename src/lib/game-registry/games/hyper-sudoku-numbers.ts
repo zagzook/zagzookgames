@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const hyperSudokuNumbers: GameTypeDefinition = {
   slug: "hyper-sudoku-numbers",
-  displayName: "Hyper Sudoku (Numbers)",
+  displayName: "Zagdoku Hyper",
   description: "Classic 9×9 Sudoku with 4 extra shaded 3×3 regions that must also contain 1–9.",
   component: "SudokuBoard",
   sortOrder: 23,

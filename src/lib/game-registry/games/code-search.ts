@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const codeSearch: GameTypeDefinition = {
   slug: "code-search",
-  displayName: "Code Search",
+  displayName: "ZagCipher",
   description: "Find hidden number sequences in the grid — across, down, and diagonal.",
   component: "CodeSearchBoard",
   sortOrder: 27,

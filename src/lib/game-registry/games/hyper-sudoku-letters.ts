@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const hyperSudokuLetters: GameTypeDefinition = {
   slug: "hyper-sudoku-letters",
-  displayName: "Hyper Sudoku (Letters)",
+  displayName: "Zagdoku Alpha Hyper",
   description: "Letter Sudoku 9×9 with 4 extra shaded 3×3 regions that must also contain all 9 letters.",
   component: "SudokuBoard",
   sortOrder: 24,

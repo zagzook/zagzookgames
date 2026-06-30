@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const pipeMaze: GameTypeDefinition = {
   slug: "pipe-maze",
-  displayName: "Pipe Maze",
+  displayName: "ZagFlow",
   description: "Rotate pipe segments to create a connected network from source to destination.",
   component: "PipeMazeBoard",
   sortOrder: 13,

@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const galaxies: GameTypeDefinition = {
   slug: "galaxies",
-  displayName: "Galaxies",
+  displayName: "ZagGalaxy",
   description: "Divide the grid into rotationally symmetric galaxies, each centred on a dot.",
   component: "GalaxiesBoard",
   sortOrder: 25,

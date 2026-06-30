@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const yinYang: GameTypeDefinition = {
   slug: "yin-yang",
-  displayName: "Yin Yang",
+  displayName: "ZagBalance",
   description: "Fill the grid with black and white circles so each colour forms one connected group with no 2×2 block.",
   component: "YinYangBoard",
   sortOrder: 30,

@@ -1,7 +1,7 @@
 import type { GameTypeDefinition } from "../types"
 export const queens: GameTypeDefinition = {
   slug: "queens",
-  displayName: "Queens",
+  displayName: "Crown Zag",
   description: "Place queens on the grid so that no two queens share a row, column, or color region.",
   component: "QueensBoard",
   sortOrder: 8,
