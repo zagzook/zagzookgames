@@ -7,6 +7,8 @@
 //   2. Import it here and add it to GAME_REGISTRY
 //   3. Run: npx tsx scripts/seed-game-registry.ts
 //   That's it. No other files need to change.
+//
+// Current count: 31 game types (13 free, 18 pro)
 // =============================================================
 
 import type { GameTypeDefinition } from "./types"
@@ -44,6 +46,7 @@ import { codeSearch } from "./games/code-search"
 import { slitherlink } from "./games/slitherlink"
 import { trainTracks } from "./games/train-tracks"
 import { yinYang } from "./games/yin-yang"
+import { crossSum } from "./games/cross-sum"
 
 export const GAME_REGISTRY: GameTypeDefinition[] = [
   // FREE GAMES
@@ -78,6 +81,7 @@ export const GAME_REGISTRY: GameTypeDefinition[] = [
   slitherlink,
   trainTracks,
   yinYang,
+  crossSum,
 ]
 
 const registryMap = new Map(GAME_REGISTRY.map((g) => [g.slug, g]))
